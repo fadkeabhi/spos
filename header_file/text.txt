@@ -1,0 +1,242 @@
+Like a statically linked library, a DLL exports variables, functions, and resources by name. A 
+client app imports the names to use those variables, functions, and resources. Unlike a 
+statically linked library, Windows connects the imports in your app to the exports in a DLL at 
+load time or at run time, instead of connecting them at link time. Windows requires extra 
+information that isn't part of the standard C++ compilation model to make these connections. 
+The MSVC compiler implements some Microsoft-specific extensions to C++ to provide this 
+extra information. 
+
+
+To create a DLL project in Visual Studio 2019 follow following steps 
+1. On the menu bar, choose File > New > Project to open the Create a New Project dialog 
+box. 
+2. At the top of the dialog, set Language to C++, set Platform to Windows, and set Project 
+type to Library. 
+3. From the filtered list of project types, select Dynamic-link Library (DLL), and then 
+choose Next. 
+4. In the Configure your new project page, enter MathLibrary in the Project name box to 
+specify a name for the project. Leave the default Location and Solution name values. Set 
+Solution to Create new solution. Uncheck Place solution and project in the same directory 
+if it's checked. 
+5. Choose the Create button to create the project. 
+To add a header file to the DLL 
+1. To create a header file for your functions, on the menu bar, choose Project > Add New 
+Item. 
+2. In the Add New Item dialog box, in the left pane, select Visual C++. In the center pane, 
+select Header File (.h). Specify MathLibrary.h as the name for the header file. 
+3. Choose the Add button to generate a blank header file, which is displayed in a new editor 
+window. 
+4. Replace the contents of the header file with this code:
+
+
+//-------------------------------------------------------------------
+// MathLibrary.h - Contains declaration of Function class 
+ #pragma once 
+#ifdef MATHLIBRARY_EXPORTS 
+ 
+#define MATHLIBRARY_API __declspec(dllexport) 
+#else 
+#define MATHLIBRARY_API __declspec(dllimport) 
+#endif 
+namespace MathLibrary 
+{ 
+// This class is exported from the MathLibrary.dll 
+ class Functions 
+{ 
+public: 
+// Returns a + b 
+static MATHLIBRARY_API double Add(double a, double b); 
+// Returns a * b 
+static MATHLIBRARY_API double Multiply(double a, double b); 
+// Returns a + (a * b) 
+static MATHLIBRARY_API double AddMultiply(double a, double b); 
+}; 
+}
+//-------------------------------------------------------------------
+
+
+
+This code declares a namespace, MathLibrary, that contains a class named Functions that 
+contains member functions to perform some mathematical operations. 
+ 
+Notice the preprocessor statements at the top of the file. By default, the New Project template 
+for a DLL adds PROJECTNAME_EXPORTS to the defined preprocessor symbols for the DLL 
+project. In this example, MATHLIBRARY_EXPORTS is defined when your MathLibrary DLL 
+project is built. When the MATHLIBRARY_EXPORTS symbol is defined, the 
+MATHLIBRARY_API symbol sets the __declspec(dllexport) modifier on the member function 
+declarations in this code. This modifier tells the compiler and linker to export the function or 
+variable from the DLL so that it can be used by other applications. When 
+MATHLIBRARY_EXPORTS is undefined—for example, when the header file is included by a 
+client application—MATHLIBRARY_API defines the __declspec(dllimport) modifier on the 
+member function declarations. This modifier optimizes the import of the function in an 
+application. 
+
+## To add an implementation to the DLL 
+1. In Solution Explorer, right-click on the Source Files node and choose Add > New Item. 
+Create a new .cpp file called MathLibrary.cpp, in the same way that you added a new 
+header file in the previous step. 
+2. In the editor window, select the tab for MathLibrary.cpp if it's already open. If not, in 
+Solution Explorer, double-click MathLibrary.cpp in the Source Files folder of the 
+MathLibrary project to open it. 
+3. In the editor, replace the contents of the MathLibrary.cpp file with the following code:
+
+
+//-------------------------------------------------------------------
+// MathLibrary.cpp : Defines the exported functions for the DLL application. 
+#include "pch.h" 
+#include "MathLibrary.h" 
+namespace MathLibrary 
+{ 
+double Functions::Add(double a, double b) 
+{ return a + b; } 
+double Functions::Multiply(double a, double b) 
+{ return a * b; } 
+double Functions::AddMultiply(double a, double b) 
+{ return a + (a * b); } 
+}
+//-------------------------------------------------------------------
+
+
+
+To verify that everything works so far, compile the dynamic link library. To compile, choose 
+Build > Build Solution on the menu bar. The DLL and related compiler output are placed in a 
+folder called Debug directly below the solution folder. If you create a Release build, the 
+output is placed in a folder called Release. The output should look something like this: 
+1>------ Build started: Project: MathLibrary, Configuration: Debug Win32 ------ 
+1>pch.cpp 
+1>dllmain.cpp 
+1>MathLibrary.cpp 
+1>Generating Code... 
+1>   Creating library 
+C:\Users\username\Source\Repos\MathLibrary\Debug\MathLibrary.lib and object 
+C:\Users\username\Source\Repos\MathLibrary\Debug\MathLibrary.exp 
+1>MathLibrary.vcxproj -> 
+C:\Users\username\Source\Repos\MathLibrary\Debug\MathLibrary.dll 
+========== Build: 1 succeeded, 0 failed, 0 up-to-date, 0 skipped ========== 
+Congratulations, you've created a DLL using Visual Studio! Next, you'll create a client app 
+that uses the functions exported by the DLL. 
+
+Create a client app that uses the DLL 
+When you create a DLL, think about how client apps may use it. To call the functions or 
+access the data exported by a DLL, client source code must have the declarations available at 
+compile time. At link time, the linker requires information to resolve the function calls or 
+data accesses. A DLL supplies this information in an import library, a file that contains 
+information about how to find the functions and data, instead of the actual code. And at run 
+time, the DLL must be available to the client, in a location that the operating system can find.
+
+
+## To create a client app in Visual Studio 
+1. On the menu bar, choose File > New > Project to open the Create a new project dialog 
+box. 
+2. At the top of the dialog, set Language to C++, set Platform to Windows, and set Project 
+type to Console. 
+3. From the filtered list of project types, choose Console App then choose Next. 
+4. In the Configure your new project page, enter MathClient in the Project name box to 
+specify a name for the project. Leave the default Location and Solution name values. Set 
+Solution to Create new solution. Uncheck Place solution and project in the same directory 
+if it's checked.  
+5. Choose the Create button to create the client project. 
+
+
+## To add the DLL header to your include path 
+1. Right-click on the MathClient node in Solution Explorer to open the Property Pages 
+dialog. 
+2. In the Configuration drop-down box, select All Configurations if it's not already selected. 
+3. In the left pane, select Configuration Properties > C/C++ > General. 
+4. In the property pane, select the drop-down control next to the Additional Include 
+Directories edit box, and then choose Edit.  
+5. Double-click in the top pane of the Additional Include Directories dialog box to enable an 
+edit control. Or, choose the folder icon to create a new entry. 
+6. In the edit control, specify the path to the location of the MathLibrary.h header file. You 
+can choose the ellipsis (...) control to browse to the correct folder. 
+7. You can also enter a relative path from your client source files to the folder that contains 
+the DLL header files. If you followed the directions to put your client project in a separate 
+solution from the DLL, the relative path should look like this: 
+..\..\MathLibrary\MathLibrary 
+8. After you've entered the path to the header file in the Additional Include Directories 
+dialog box, choose the OK button. In the Property Pages dialog box, choose the OK 
+button to save your changes.  
+9. You can now include the MathLibrary.h file and use the functions it declares in your 
+client application. Replace the contents of MathClient.cpp by using this code:
+
+
+//-------------------------------------------------------------------
+
+// MathClient.cpp : Defines the entry point for the console application. 
+#include "pch.h" 
+#include <iostream>
+#include "MathLibrary.h" 
+using namespace std; 
+int main() 
+{ 
+double a = 7.4; 
+int b = 99; 
+cout << "a + b = " << 
+MathLibrary::Functions::Add(a, b) << endl; 
+cout << "a * b = " << 
+MathLibrary::Functions::Multiply(a, b) << endl; 
+cout << "a + (a * b) = " << 
+MathLibrary::Functions::AddMultiply(a, b) << endl; 
+return 0; 
+}
+
+//-------------------------------------------------------------------
+
+
+## To add the DLL import library to your project 
+1. Right-click on the MathClient node in Solution Explorer and choose Properties to open 
+the Property Pages dialog. 
+2. In the Configuration drop-down box, select All Configurations if it's not already selected. 
+It ensures that any property changes apply to both Debug and Release builds. 
+3. In the left pane, select Configuration Properties > Linker > Input. In the property pane, 
+select the drop-down control next to the Additional Dependencies edit box, and then 
+choose Edit. 
+4. In the Additional Dependencies dialog, add MathLibrary.lib to the list in the top edit 
+control. 
+5. Choose OK to go back to the Property Pages dialog box. 
+6. In the left pane, select Configuration Properties > Linker > General. In the property pane, 
+select the drop-down control next to the Additional Library Directories edit box, and then 
+choose Edit. 
+7. Double-click in the top pane of the Additional Library Directories dialog box to enable an 
+edit control. In the edit control, specify the path to the location of the MathLibrary.lib file. 
+By default, it's in a folder called Debug directly under the DLL solution folder. 
+You can use the $(IntDir) macro so that the linker can find your DLL, no matter which 
+kind of build you create. If you followed the directions to put your client project in a 
+separate solution from the DLL project, the relative path should look like this: 
+..\..\MathLibrary\$(IntDir) 
+8. Once you've entered the path to the library file in the Additional Library Directories 
+dialog box, choose the OK button to go back to the Property Pages dialog box. Choose OK 
+to save the property changes. 
+
+
+## To copy the DLL in a post-build event 
+1. Right-click on the MathClient node in Solution Explorer and choose Properties to open 
+the Property Pages dialog.
+2. In the Configuration drop-down box, select All Configurations if it isn't already selected. 
+3. In the left pane, select Configuration Properties > Build Events > Post-Build Event. 
+4. In the property pane, select the edit control in the Command Line field. If you followed 
+the directions to put your client project in a separate solution from the DLL project, then 
+enter this command: xcopy /y /d "..\..\MathLibrary\$(IntDir)MathLibrary.dll" 
+"$(OutDir)" 
+5. Choose the OK button to save your changes to the project properties. 
+Now your client app has everything it needs to build and run. Build the application by 
+choosing Build > Build Solution on the menu bar. The Output window in Visual Studio 
+
+
+should have something like the following example depending on your version of Visual 
+Studio:
+1>------ Build started: Project: MathClient, Configuration: Debug Win32 ------ 
+1>MathClient.cpp 
+1>MathClient.vcxproj -> 
+C:\Users\username\Source\Repos\MathClient\Debug\MathClient.exe 
+1>1 File(s) copied 
+========== Build: 1 succeeded, 0 failed, 0 up-to-date, 0 skipped ========== 
+To run the application 
+Now run your application to see what it does. On the menu bar, choose Debug > Start 
+Without Debugging. Visual Studio opens a command window for the program to run in. The 
+last part of the output should look like: 
+Output 
+a + b = 106.4 
+a * b = 732.6 
+a + (a * b) = 740 
+Press any key to continue . . .
