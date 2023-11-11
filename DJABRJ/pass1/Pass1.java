@@ -21,6 +21,7 @@ class Pass1 {
 			while ((ipCharBuff = ip.read()) != -1) {
 				input += (char) ipCharBuff;
 			}
+			ip.close();
 		} catch (Exception e) {
 			System.out.println("Error" + e);
 			System.exit(0);
@@ -116,6 +117,8 @@ class Pass1 {
 						literalsAddress.set(j, String.valueOf(lc));
 					}
 				}
+
+				
 
 				if (x.equals("END")) {
 					output += "(AD,02)\t";
@@ -219,6 +222,7 @@ class Pass1 {
 		try {
 			FileOutputStream out = new FileOutputStream("./outputs/out.txt");
 			out.write(output.getBytes());
+			out.close();
 
 		} catch (Exception e) {
 
