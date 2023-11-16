@@ -1,0 +1,10 @@
+INCR
+&X N1
+&Y N2
+&REG =AREG
+END
+DECR
+&A N1
+&B N2
+&REG =BREG
+END

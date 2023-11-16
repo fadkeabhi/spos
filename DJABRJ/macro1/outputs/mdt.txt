@@ -1,0 +1,8 @@
+1 MOVER    &REG,&X
+2 ADD      &REG,&Y
+3 MOVEM    &REG,&X
+4 MEND
+5 MOVER    &REG,&A
+6 SUB      &REG,&B
+7 MOVEM    &REG,&A
+8 MEND
