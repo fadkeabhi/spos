@@ -55,8 +55,9 @@ class Algo2 {
                 faults++;
                 if (getEmptyFrame() != -1) {
                     // An empty frame is available
+                    latest_ptr = getEmptyFrame();
                     frame[getEmptyFrame()] = pages[i];
-                    latest_ptr = i;
+                    
                 } else {
                     // No empty frame available
                     frame[latest_ptr] = pages[i];
